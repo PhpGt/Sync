@@ -29,7 +29,7 @@ $destination = "/var/backup/example.com";
 
 try {
 	$sync = new DirectorySync($source, $destination);
-	$sync->exec(DirectorySync::MODIFIED_TIME);
+	$sync->exec(DirectorySync::COMPARE_FILEMTIME);
 }
 catch(SyncException $exception) {
 	fwrite(STDERR, "Error performing sync: " . $exception->getMessage());

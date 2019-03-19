@@ -10,5 +10,5 @@ abstract class AbstractSync {
 		$this->destination = $destination;
 	}
 
-	abstract public function exec(string $mode = null):void;
+	abstract public function exec(int $settings = 0):void;
 }
