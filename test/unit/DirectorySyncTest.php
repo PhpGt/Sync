@@ -11,18 +11,8 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 
 class DirectorySyncTest extends TestCase {
-	protected $tmp;
-
-	public function setUp():void {
-		$this->tmp = $this->getRandomTmp();
-	}
-
 	public function tearDown():void {
-		$baseTmp = implode(DIRECTORY_SEPARATOR, [
-			sys_get_temp_dir(),
-			"phpgt",
-			"sync",
-		]);
+		$baseTmp = $this->getBaseTempDirectory();
 
 		if(!is_dir($baseTmp)) {
 			return;
@@ -56,24 +46,40 @@ class DirectorySyncTest extends TestCase {
 	public function testSourceNotExists() {
 		self::expectException(SyncException::class);
 		self::expectExceptionMessage("Source directory does not exist");
-		new DirectorySync($this->tmp, $this->getRandomTmp());
+		new DirectorySync($this->getRandomTmp(), $this->getRandomTmp());
 	}
 
 	public function testDestinationNotExists() {
-		mkdir($this->tmp, 0775, true);
+		$source = $this->getRandomTmp();
+		mkdir($source, 0775, true);
 		$dest = $this->getRandomTmp();
-		$sut = new DirectorySync($this->tmp, $dest);
+		$sut = new DirectorySync($source, $dest);
 
 		self::assertDirectoryNotExists($dest);
 		$sut->exec();
 		self::assertDirectoryExists($dest);
 	}
 
-	protected function getRandomTmp():string {
+	public function testCopy() {
+		$source = $this->getRandomTmp();
+		$dest = $this->getRandomTmp();
+		mkdir($source, 0775, true);
+		$sut = new DirectorySync($source, $dest);
+// TODO: Create some random files.
+		$sut->exec();
+	}
+
+	protected function getBaseTempDirectory():string {
 		return implode(DIRECTORY_SEPARATOR, [
 			sys_get_temp_dir(),
 			"phpgt",
 			"sync",
+		]);
+	}
+
+	protected function getRandomTmp():string {
+		return implode(DIRECTORY_SEPARATOR, [
+			$this->getBaseTempDirectory(),
 			uniqid()
 		]);
 	}
