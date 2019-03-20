@@ -36,9 +36,8 @@ catch(SyncException $exception) {
 	exit(1);
 }
 
-$stats = $sync->getStats();
 echo "Sync complete!" . PHP_EOL;
-echo "Changed: " . $stats->getChangedCount();
-echo "Deleted: " . $stats->getDeletedCount();
-echo "Untouched: " . $stats->getUntouchedCount();
+echo "Changed: " . count($sync->getCopiedFilesList());
+echo "Deleted: " . count($sync->getDeletedFilesList());
+echo "Skipped: " . count($sync->getSkippedFilesList());
 ```
