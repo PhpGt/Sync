@@ -4,6 +4,7 @@ namespace Gt\Sync;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
 
 class DirectorySync extends AbstractSync {
 	const COMPARE_FILEMTIME = 1<<0;
@@ -30,9 +31,12 @@ class DirectorySync extends AbstractSync {
 	public function exec(int $settings = self::DEFAULT_SETTINGS):void {
 		$this->checkSettings($settings);
 
-		$iteratorSettings = FilesystemIterator::SKIP_DOTS
-			| FilesystemIterator::KEY_AS_PATHNAME
+		$iteratorSettings = FilesystemIterator::KEY_AS_PATHNAME
 			| FilesystemIterator::CURRENT_AS_FILEINFO;
+
+		if(!is_dir($this->destination)) {
+			mkdir($this->destination, 0775, true);
+		}
 
 		$sourceIterator = new RecursiveDirectoryIterator(
 			$this->source,
@@ -43,8 +47,17 @@ class DirectorySync extends AbstractSync {
 			$iteratorSettings
 		);
 
-		$iterator = new RecursiveIteratorIterator($destinationIterator);
+		$iterator = new RecursiveIteratorIterator(
+			$destinationIterator,
+			RecursiveIteratorIterator::CHILD_FIRST
+		);
 		foreach($iterator as $pathName => $file) {
+			/** @var $file SplFileInfo */
+			if($file->getFilename() === "."
+			|| $file->getFilename() === "..") {
+				continue;
+			}
+
 			$relativePath = substr(
 				$pathName,
 				strlen($this->destination) + 1
@@ -95,10 +108,12 @@ class DirectorySync extends AbstractSync {
 			$this->source,
 			$relativePath,
 		]);
+		$sourceFile = realpath($sourceFile);
 		$destinationFile = implode(DIRECTORY_SEPARATOR, [
 			$this->destination,
 			$relativePath,
 		]);
+		$destinationFile = realpath($destinationFile);
 
 		if(is_dir($sourceFile)) {
 			return;
@@ -124,6 +139,7 @@ class DirectorySync extends AbstractSync {
 			$this->destination,
 			$relativePath,
 		]);
+		$destinationFile = realpath($destinationFile);
 
 		if(is_dir($destinationFile)) {
 			if(!rmdir($destinationFile)) {
