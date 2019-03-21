@@ -65,8 +65,40 @@ class DirectorySyncTest extends TestCase {
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
 		$sut = new DirectorySync($source, $dest);
-// TODO: Create some random files.
+
+		$this->createRandomFiles($source);
 		$sut->exec();
+
+		self::assertDirectoryContentsIdentical($source, $dest);
+	}
+
+	protected function createRandomFiles(
+		string $directory,
+		int $numFiles = 100,
+		int $randomNestLevel = 3
+	):void {
+		for($i = 0; $i < $numFiles; $i++) {
+			$subPathParts = [];
+			$nestLevel = rand(0, $randomNestLevel);
+
+			for($j = 0; $j <= $nestLevel; $j++) {
+				$subPathParts []= uniqid();
+			}
+
+			$subPath = implode(DIRECTORY_SEPARATOR,
+				$subPathParts
+			) . ".file";
+
+			$path = implode(DIRECTORY_SEPARATOR, [
+				$directory,
+				$subPath,
+			]);
+
+			if(!is_dir(dirname($path))) {
+				mkdir(dirname($path), 0775, true);
+			}
+			file_put_contents($path, uniqid("content-"));
+		}
 	}
 
 	protected function getBaseTempDirectory():string {
@@ -82,5 +114,75 @@ class DirectorySyncTest extends TestCase {
 			$this->getBaseTempDirectory(),
 			uniqid()
 		]);
+	}
+
+	protected static function assertDirectoryContentsIdentical(
+		string $expectedPath,
+		string $actualPath
+	):void {
+		$directory = new RecursiveDirectoryIterator(
+			$expectedPath,
+			RecursiveDirectoryIterator::SKIP_DOTS
+			| RecursiveDirectoryIterator::CURRENT_AS_FILEINFO
+			| RecursiveDirectoryIterator::KEY_AS_PATHNAME
+		);
+		$iterator = new RecursiveIteratorIterator(
+			$directory,
+			RecursiveIteratorIterator::CHILD_FIRST
+		);
+		$expectedFiles = iterator_to_array($iterator);
+
+		$directory = new RecursiveDirectoryIterator(
+			$expectedPath,
+			RecursiveDirectoryIterator::SKIP_DOTS
+			| RecursiveDirectoryIterator::CURRENT_AS_FILEINFO
+			| RecursiveDirectoryIterator::KEY_AS_PATHNAME
+		);
+		$iterator = new RecursiveIteratorIterator(
+			$directory,
+			RecursiveIteratorIterator::CHILD_FIRST
+		);
+		$actualFiles = iterator_to_array($iterator);
+
+		foreach($expectedFiles as $expectedFilePath => $file) {
+			/** @var SplFileInfo $file */
+			$relativePath = substr(
+				$expectedFilePath,
+				strlen($expectedPath) + 1
+			);
+
+			$actualFilePath = implode(DIRECTORY_SEPARATOR, [
+				$actualPath,
+				$relativePath
+			]);
+
+			if(is_dir($expectedFilePath)) {
+				self::assertDirectoryExists($actualFilePath);
+			}
+			else {
+				self::assertFileExists($actualFilePath);
+			}
+		}
+
+// Asset deletions from source.
+		foreach($actualFiles as $actualFilePath => $file) {
+			/** @var SplFileInfo $file */
+			$relativePath = substr(
+				$actualFilePath,
+				strlen($actualPath) + 1
+			);
+
+			$expectedFilePath = implode(DIRECTORY_SEPARATOR, [
+				$expectedPath,
+				$relativePath
+			]);
+
+			if(is_dir($actualFilePath)) {
+				self::assertDirectoryExists($expectedFilePath);
+			}
+			else {
+				self::assertFileExists($expectedFilePath);
+			}
+		}
 	}
 }

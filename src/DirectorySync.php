@@ -113,7 +113,6 @@ class DirectorySync extends AbstractSync {
 			$this->destination,
 			$relativePath,
 		]);
-		$destinationFile = realpath($destinationFile);
 
 		if(is_dir($sourceFile)) {
 			return;
@@ -125,10 +124,6 @@ class DirectorySync extends AbstractSync {
 				0775,
 				true
 			);
-		}
-
-		if(!copy($sourceFile, $destinationFile)) {
-			throw new SyncException("Error copying $sourceFile to $destinationFile.");
 		}
 
 		touch($destinationFile, filemtime($sourceFile));
