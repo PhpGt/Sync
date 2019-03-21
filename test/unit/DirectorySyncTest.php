@@ -118,6 +118,30 @@ class DirectorySyncTest extends TestCase {
 		self::assertDirectoryContentsIdentical($source, $dest);
 	}
 
+	public function testFailDelete() {
+		$source = $this->getRandomTmp();
+		$dest = $this->getRandomTmp();
+		mkdir($source, 0775, true);
+		$this->createRandomFiles($source);
+		$fileToDelete = $this->getRandomFileFromDirectory($source);
+
+		$sut = new DirectorySync($source, $dest);
+		$sut->exec();
+
+		unlink($fileToDelete);
+		$fileToDeleteDest = implode(DIRECTORY_SEPARATOR, [
+			$dest,
+			substr($fileToDelete, strlen($source) + 1),
+		]);
+		$fh = fopen($fileToDeleteDest, "w+");
+		flock($fh, LOCK_EX);
+
+		self::expectException(SyncException::class);
+		self::expectExceptionMessage("Error deleting file");
+
+		$sut->exec();
+	}
+
 	protected function createRandomFiles(
 		string $directory,
 		int $numFiles = 100,
