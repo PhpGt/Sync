@@ -64,11 +64,40 @@ class DirectorySyncTest extends TestCase {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
-		$sut = new DirectorySync($source, $dest);
-
 		$this->createRandomFiles($source);
+
+		$sut = new DirectorySync($source, $dest);
 		$sut->exec();
 
+		self::assertDirectoryContentsIdentical($source, $dest);
+	}
+
+	public function testDeleteFiles() {
+		$source = $this->getRandomTmp();
+		$dest = $this->getRandomTmp();
+		mkdir($source, 0775, true);
+		$numFiles = rand(10, 250);
+		$this->createRandomFiles($source, $numFiles);
+		$filesToDelete = [];
+		$numFilesToDelete = rand(1, round($numFiles / 5));
+		for($i = 0; $i < $numFilesToDelete; $i++) {
+			$f = $this->getRandomFileFromDirectory($source);
+			if(!in_array($f, $filesToDelete)) {
+				$filesToDelete []= $f;
+			}
+		}
+
+		$sut = new DirectorySync($source, $dest);
+		$sut->exec();
+		self::assertDirectoryContentsIdentical($source, $dest);
+
+		foreach($filesToDelete as $f) {
+			self::assertFileExists($f);
+			unlink($f);
+			self::assertFileNotExists($f);
+		}
+
+		$sut->exec();
 		self::assertDirectoryContentsIdentical($source, $dest);
 	}
 
@@ -99,6 +128,20 @@ class DirectorySyncTest extends TestCase {
 			}
 			file_put_contents($path, uniqid("content-"));
 		}
+	}
+
+	protected function getRandomFileFromDirectory(string $dir):string {
+		do {
+			$fileList = glob("$dir/*");
+			$file = $fileList[array_rand($fileList)];
+			if(is_dir($file)) {
+				$dir = $file;
+			}
+			else {
+				return $file;
+			}
+		}
+		while($fileList);
 	}
 
 	protected function getBaseTempDirectory():string {
