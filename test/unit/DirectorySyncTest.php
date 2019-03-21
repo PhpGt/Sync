@@ -101,6 +101,23 @@ class DirectorySyncTest extends TestCase {
 		self::assertDirectoryContentsIdentical($source, $dest);
 	}
 
+	public function testDeleteDirectory() {
+		$source = $this->getRandomTmp();
+		$dest = $this->getRandomTmp();
+		mkdir($source, 0775, true);
+		$numFiles = rand(10, 250);
+		$this->createRandomFiles($source, $numFiles);
+		$dirToDelete = $this->getRandomSubdirectoryFromDirectory($source);
+
+		$sut = new DirectorySync($source, $dest);
+		$sut->exec();
+
+		$this->recursiveDeleteDirectory($dirToDelete);
+
+		$sut->exec();
+		self::assertDirectoryContentsIdentical($source, $dest);
+	}
+
 	protected function createRandomFiles(
 		string $directory,
 		int $numFiles = 100,
@@ -142,6 +159,38 @@ class DirectorySyncTest extends TestCase {
 			}
 		}
 		while($fileList);
+	}
+
+	protected function getRandomSubdirectoryFromDirectory(string $dir):string {
+		$fileList = glob("$dir/*");
+		do {
+			$file = $fileList[array_rand($fileList)];
+		}
+		while(!is_dir($file));
+
+		return $file;
+	}
+
+	protected function recursiveDeleteDirectory(string $dir) {
+		$directory = new RecursiveDirectoryIterator(
+			$dir,
+			RecursiveDirectoryIterator::SKIP_DOTS
+			| RecursiveDirectoryIterator::KEY_AS_PATHNAME
+			| RecursiveDirectoryIterator::CURRENT_AS_FILEINFO
+		);
+		$iterator = new RecursiveIteratorIterator(
+			$directory,
+			RecursiveIteratorIterator::CHILD_FIRST
+		);
+
+		foreach($iterator as $pathName => $file) {
+			if(is_dir($pathName)) {
+				rmdir($pathName);
+			}
+			else {
+				unlink($pathName);
+			}
+		}
 	}
 
 	protected function getBaseTempDirectory():string {
