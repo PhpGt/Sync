@@ -22,13 +22,13 @@ class DirectorySync extends AbstractSync {
 		if(!is_dir($source)) {
 			throw new SyncException("Source directory does not exist: $source");
 		}
-
-		$this->copiedFiles = [];
-		$this->skippedFiles = [];
-		$this->deletedFiles = [];
 	}
 
 	public function exec(int $settings = self::DEFAULT_SETTINGS):void {
+		$this->copiedFiles = [];
+		$this->skippedFiles = [];
+		$this->deletedFiles = [];
+
 		$this->checkSettings($settings);
 
 		$iteratorSettings = FilesystemIterator::KEY_AS_PATHNAME
@@ -71,6 +71,12 @@ class DirectorySync extends AbstractSync {
 
 		$iterator = new RecursiveIteratorIterator($sourceIterator);
 		foreach($iterator as $pathName => $file) {
+			/** @var $file SplFileInfo */
+			if($file->getFilename() === "."
+				|| $file->getFilename() === "..") {
+				continue;
+			}
+
 			$relativePath = substr(
 				$pathName,
 				strlen($this->source) + 1

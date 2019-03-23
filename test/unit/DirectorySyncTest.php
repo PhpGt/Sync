@@ -90,6 +90,25 @@ class DirectorySyncTest extends TestCase {
 		self::assertDirectoryContentsIdentical($source, $dest);
 	}
 
+	public function testCopyNewFileEditedNotCheckedByDefault() {
+		$source = $this->getRandomTmp();
+		$dest = $this->getRandomTmp();
+		mkdir($source, 0775, true);
+		$fileList = $this->createRandomFiles($source);
+
+		$sut = new DirectorySync($source, $dest);
+		$sut->exec();
+
+		self::assertDirectoryContentsIdentical($source, $dest);
+
+		$randomFile = $fileList[array_rand($fileList)];
+		file_put_contents($randomFile, "UPDATED!!!", FILE_APPEND);
+
+		self::assertDirectoryContentsNotIdentical($source, $dest);
+		$sut->exec(DirectorySync::COMPARE_HASH);
+		self::assertDirectoryContentsIdentical($source, $dest);
+	}
+
 	public function testDeleteFiles() {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
@@ -306,11 +325,13 @@ class DirectorySyncTest extends TestCase {
 					self::assertFileExists($actualFilePath);
 					self::assertEquals(
 						filemtime($expectedFilePath),
-						filemtime($actualFilePath)
+						filemtime($actualFilePath),
+						$actualFilePath
 					);
 					self::assertEquals(
 						md5_file($expectedFilePath),
-						md5_file($actualFilePath)
+						md5_file($actualFilePath),
+						$actualFilePath
 					);
 				}
 			}
