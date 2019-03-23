@@ -75,11 +75,18 @@ class DirectorySyncTest extends TestCase {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
-		$this->createRandomFiles($source);
+		$fileList = $this->createRandomFiles($source);
 
 		$sut = new DirectorySync($source, $dest);
 		$sut->exec();
 
+		self::assertDirectoryContentsIdentical($source, $dest);
+
+		$randomFile = $fileList[array_rand($fileList)];
+		touch($randomFile, time() + 1);
+
+		self::assertDirectoryContentsNotIdentical($source, $dest);
+		$sut->exec();
 		self::assertDirectoryContentsIdentical($source, $dest);
 	}
 
@@ -133,7 +140,9 @@ class DirectorySyncTest extends TestCase {
 		string $directory,
 		int $numFiles = 100,
 		int $randomNestLevel = 3
-	):void {
+	):array {
+		$fileList = [];
+
 		for($i = 0; $i < $numFiles; $i++) {
 			$subPathParts = [];
 			$nestLevel = rand(0, $randomNestLevel);
@@ -155,7 +164,10 @@ class DirectorySyncTest extends TestCase {
 				mkdir(dirname($path), 0775, true);
 			}
 			file_put_contents($path, uniqid("content-"));
+			$fileList []= $path;
 		}
+
+		return $fileList;
 	}
 
 	protected function getRandomFileFromDirectory(string $dir):string {
@@ -221,8 +233,11 @@ class DirectorySyncTest extends TestCase {
 
 	protected static function assertDirectoryContentsIdentical(
 		string $expectedPath,
-		string $actualPath
+		string $actualPath,
+		bool $invertLogic = false
 	):void {
+		$totallyEqual = true;
+
 		$directory = new RecursiveDirectoryIterator(
 			$expectedPath,
 			RecursiveDirectoryIterator::SKIP_DOTS
@@ -260,18 +275,44 @@ class DirectorySyncTest extends TestCase {
 			]);
 
 			if(is_dir($expectedFilePath)) {
-				self::assertDirectoryExists($actualFilePath);
+				if($invertLogic) {
+					if(!is_dir($actualFilePath)) {
+						$totallyEqual = false;
+					}
+				}
+				else {
+					self::assertDirectoryExists($actualFilePath);
+				}
 			}
 			else {
-				self::assertFileExists($actualFilePath);
-				self::assertEquals(
-					filemtime($expectedFilePath),
-					filemtime($actualFilePath)
-				);
-				self::assertEquals(
-					md5_file($expectedFilePath),
-					md5_file($actualFilePath)
-				);
+				if($invertLogic) {
+					$fileExists = file_exists($actualFilePath);
+					$filemTimeEquals =
+						filemtime($expectedFilePath)
+						=== filemtime($actualFilePath);
+					$md5Equals =
+						md5_file($expectedFilePath)
+						=== md5_file($actualFilePath);
+					$equality =
+						$fileExists
+						&& $filemTimeEquals
+						&& $md5Equals;
+
+					if(!$equality) {
+						$totallyEqual = false;
+					}
+				}
+				else {
+					self::assertFileExists($actualFilePath);
+					self::assertEquals(
+						filemtime($expectedFilePath),
+						filemtime($actualFilePath)
+					);
+					self::assertEquals(
+						md5_file($expectedFilePath),
+						md5_file($actualFilePath)
+					);
+				}
 			}
 		}
 
@@ -289,11 +330,40 @@ class DirectorySyncTest extends TestCase {
 			]);
 
 			if(is_dir($actualFilePath)) {
-				self::assertDirectoryExists($expectedFilePath);
+				if($invertLogic) {
+					if(!is_dir($expectedFilePath)) {
+						$totallyEqual = false;
+					}
+				}
+				else {
+					self::assertDirectoryExists($expectedFilePath);
+				}
 			}
 			else {
-				self::assertFileExists($expectedFilePath);
+				if($invertLogic) {
+					if(!is_file($expectedFilePath)) {
+						$totallyEqual = false;
+					}
+				}
+				else {
+					self::assertFileExists($expectedFilePath);
+				}
 			}
 		}
+
+		if($invertLogic) {
+			self::assertFalse($totallyEqual);
+		}
+	}
+
+	protected static function assertDirectoryContentsNotIdentical(
+		string $expectedPath,
+		string $actualPath
+	):void {
+		self::assertDirectoryContentsIdentical(
+			$expectedPath,
+			$actualPath,
+			true
+		);
 	}
 }

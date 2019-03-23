@@ -126,6 +126,7 @@ class DirectorySync extends AbstractSync {
 			);
 		}
 
+		copy($sourceFile, $destinationFile);
 		touch($destinationFile, filemtime($sourceFile));
 	}
 
