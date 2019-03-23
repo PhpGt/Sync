@@ -183,6 +183,22 @@ class DirectorySyncTest extends TestCase {
 		self::assertCount(0, $sut->getCopiedFilesList());
 	}
 
+	public function testGetDeletedFilesList() {
+		$source = $this->getRandomTmp();
+		$dest = $this->getRandomTmp();
+		mkdir($source, 0775, true);
+		$sourceFileList = $this->createRandomFiles($source);
+		$sut = new DirectorySync($source, $dest);
+		$sut->exec();
+
+		$deletedFilesList = $sut->getDeletedFilesList();
+		self::assertCount(0, $deletedFilesList);
+
+		unlink($this->getRandomFileFromDirectory($source));
+		$sut->exec();
+		self::assertCount(1, $sut->getDeletedFilesList());
+	}
+
 	protected function createRandomFiles(
 		string $directory,
 		int $numFiles = 100,
