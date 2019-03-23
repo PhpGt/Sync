@@ -71,6 +71,18 @@ class DirectorySyncTest extends TestCase {
 		self::assertDirectoryContentsIdentical($source, $dest);
 	}
 
+	public function testCopyNewFileTouched() {
+		$source = $this->getRandomTmp();
+		$dest = $this->getRandomTmp();
+		mkdir($source, 0775, true);
+		$this->createRandomFiles($source);
+
+		$sut = new DirectorySync($source, $dest);
+		$sut->exec();
+
+		self::assertDirectoryContentsIdentical($source, $dest);
+	}
+
 	public function testDeleteFiles() {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
@@ -252,6 +264,14 @@ class DirectorySyncTest extends TestCase {
 			}
 			else {
 				self::assertFileExists($actualFilePath);
+				self::assertEquals(
+					filemtime($expectedFilePath),
+					filemtime($actualFilePath)
+				);
+				self::assertEquals(
+					md5_file($expectedFilePath),
+					md5_file($actualFilePath)
+				);
 			}
 		}
 
