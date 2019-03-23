@@ -155,6 +155,19 @@ class DirectorySyncTest extends TestCase {
 		self::assertDirectoryContentsIdentical($source, $dest);
 	}
 
+	public function testCopyWrongConfig() {
+		$source = $this->getRandomTmp();
+		$dest = $this->getRandomTmp();
+		mkdir($source, 0775, true);
+		$sut = new DirectorySync($source, $dest);
+		self::expectException(SyncException::class);
+		self::expectExceptionMessage("Cannot compare both filemtime and hash");
+		$sut->exec(
+			DirectorySync::COMPARE_HASH
+			| DirectorySync::COMPARE_FILEMTIME
+		);
+	}
+
 	protected function createRandomFiles(
 		string $directory,
 		int $numFiles = 100,

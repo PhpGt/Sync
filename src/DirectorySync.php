@@ -195,7 +195,7 @@ class DirectorySync extends AbstractSync {
 	protected function checkSettings(int $settings):void {
 		if($settings & self::COMPARE_FILEMTIME
 		&& $settings & self::COMPARE_HASH) {
-			throw new SyncException("Can not compare both filemtime and hash.");
+			throw new SyncException("Cannot compare both filemtime and hash.");
 		}
 	}
 }
