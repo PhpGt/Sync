@@ -168,6 +168,21 @@ class DirectorySyncTest extends TestCase {
 		);
 	}
 
+	public function testGetCopiedFilesList() {
+		$source = $this->getRandomTmp();
+		$dest = $this->getRandomTmp();
+		mkdir($source, 0775, true);
+		$sourceFileList = $this->createRandomFiles($source);
+		$sut = new DirectorySync($source, $dest);
+		$sut->exec();
+
+		$copiedFilesList = $sut->getCopiedFilesList();
+		self::assertCount(count($sourceFileList), $copiedFilesList);
+
+		$sut->exec();
+		self::assertCount(0, $sut->getCopiedFilesList());
+	}
+
 	protected function createRandomFiles(
 		string $directory,
 		int $numFiles = 100,
