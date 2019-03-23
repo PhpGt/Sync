@@ -186,10 +186,6 @@ class DirectorySync extends AbstractSync {
 			return false;
 		}
 
-		if(is_dir($destinationFile)) {
-			return true;
-		}
-
 		$sourceComp = $comparatorFunction($sourceFile);
 		$destinationComp = $comparatorFunction($destinationFile);
 
