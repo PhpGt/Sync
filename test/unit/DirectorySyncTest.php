@@ -239,12 +239,22 @@ class DirectorySyncTest extends TestCase {
 		);
 
 		foreach($iterator as $pathName => $file) {
+			/** @var $file SplFileInfo */
+			if($file->getFilename() === "."
+			|| $file->getFilename() === "..") {
+				continue;
+			}
+
 			if(is_dir($pathName)) {
 				rmdir($pathName);
 			}
 			else {
 				unlink($pathName);
 			}
+		}
+
+		if(is_dir($dir)) {
+			rmdir($dir);
 		}
 	}
 

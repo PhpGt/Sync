@@ -120,10 +120,6 @@ class DirectorySync extends AbstractSync {
 			$relativePath,
 		]);
 
-		if(is_dir($sourceFile)) {
-			return;
-		}
-
 		if(!is_dir(dirname($destinationFile))) {
 			mkdir(
 				dirname($destinationFile),
