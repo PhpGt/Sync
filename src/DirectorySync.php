@@ -137,14 +137,10 @@ class DirectorySync extends AbstractSync {
 		$destinationFile = realpath($destinationFile);
 
 		if(is_dir($destinationFile)) {
-			if(!rmdir($destinationFile)) {
-				throw new SyncException("Error deleting directory: $destinationFile");
-			}
+			rmdir($destinationFile);
 		}
 		else {
-			if(!unlink($destinationFile)) {
-				throw new SyncException("Error deleting file: $destinationFile");
-			}
+			unlink($destinationFile);
 		}
 	}
 
