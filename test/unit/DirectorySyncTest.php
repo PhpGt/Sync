@@ -215,6 +215,18 @@ class DirectorySyncTest extends TestCase {
 		self::assertCount(count($sourceFileList), $skippedFilesList);
 	}
 
+	public function testCheck() {
+		$source = $this->getRandomTmp();
+		$dest = $this->getRandomTmp();
+		mkdir($source, 0775, true);
+		$this->createRandomFiles($source);
+
+		$sut = new DirectorySync($source, $dest);
+		self::assertFalse($sut->check());
+		$sut->exec();
+		self::assertTrue($sut->check());
+	}
+
 	protected function createRandomFiles(
 		string $directory,
 		int $numFiles = 100,

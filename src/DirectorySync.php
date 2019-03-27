@@ -24,6 +24,21 @@ class DirectorySync extends AbstractSync {
 		}
 	}
 
+	/**
+	 * @param int $settings Bitmask of self::COMPARE_* values
+	 * @return bool True if source and destination are in sync
+	 */
+	public function check(int $settings = self::DEFAULT_SETTINGS):bool {
+		return $this->compareSourceDestination(
+			".",
+			$settings
+		);
+	}
+
+	/**
+	 * Performs the directory synchronisation
+	 * @param int $settings Bitmask of self::COMPARE_* values
+	 */
 	public function exec(int $settings = self::DEFAULT_SETTINGS):void {
 		$this->copiedFiles = [];
 		$this->skippedFiles = [];
