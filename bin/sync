@@ -1,8 +1,9 @@
 #!/usr/bin/env php
 <?php
+
+use Gt\Cli\Argument\CommandArgumentList;
 use Gt\Sync\Command\SyncCommand;
 use Gt\Cli\Application;
-use Gt\Cli\Argument\ArgumentList;
 
 $autoloadLocations = [
 	implode(DIRECTORY_SEPARATOR, [
@@ -29,8 +30,7 @@ foreach($autoloadLocations as $location) {
 
 $application = new Application(
 	"Client-side build system",
-	new ArgumentList(...$argv),
+	new CommandArgumentList("sync", ...$argv),
 	new SyncCommand()
 );
-//$application->setDefaultCommand("sync");
 $application->run();
