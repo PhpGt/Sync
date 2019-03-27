@@ -130,6 +130,11 @@ class DirectorySync extends AbstractSync {
 			$this->copy($relativePath);
 			$this->copiedFiles []= $relativePath;
 		}
+
+		if(!empty($this->copiedFiles)
+		|| !empty($this->deletedFiles)) {
+			touch($this->destination, filemtime($this->source));
+		}
 	}
 
 	public function getCopiedFilesList():array {
