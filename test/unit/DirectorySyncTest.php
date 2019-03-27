@@ -227,6 +227,34 @@ class DirectorySyncTest extends TestCase {
 		self::assertTrue($sut->check());
 	}
 
+	public function testSetPattern() {
+		$source = $this->getRandomTmp();
+		$dest = $this->getRandomTmp();
+		mkdir($source, 0775, true);
+		$this->createRandomFiles($source);
+
+		$file1 = $this->getRandomFileFromDirectory($source);
+		do {
+			$file2 = $this->getRandomFileFromDirectory($source);
+		}
+		while($file2 === $file1);
+		do {
+			$file3 = $this->getRandomFileFromDirectory($source);
+		}
+		while($file3 === $file2);
+
+// Rename three files to abcdef.file to abcdef.filematch
+		rename($file1, $file1 . "match");
+		rename($file2, $file2 . "match");
+		rename($file3, $file3 . "match");
+
+		$sut = new DirectorySync($source, $dest);
+		$sut->setPattern("**/*.filematch");
+		$sut->exec();
+		$copiedFiles = $sut->getCopiedFilesList();
+		self::assertCount(3, $copiedFiles);
+	}
+
 	protected function createRandomFiles(
 		string $directory,
 		int $numFiles = 100,

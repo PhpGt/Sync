@@ -5,6 +5,8 @@ use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
+use Webmozart\Glob\Glob;
+use Webmozart\PathUtil\Path;
 
 class DirectorySync extends AbstractSync {
 	const COMPARE_FILEMTIME = 1<<0;
@@ -15,6 +17,7 @@ class DirectorySync extends AbstractSync {
 	protected $copiedFiles;
 	protected $skippedFiles;
 	protected $deletedFiles;
+	protected $glob;
 
 	public function __construct(string $source, string $destination) {
 		parent::__construct($source, $destination);
@@ -22,6 +25,12 @@ class DirectorySync extends AbstractSync {
 		if(!is_dir($source)) {
 			throw new SyncException("Source directory does not exist: $source");
 		}
+
+		$this->glob = "**/*";
+	}
+
+	public function setPattern(string $glob):void {
+		$this->glob = $glob;
 	}
 
 	/**
@@ -78,6 +87,10 @@ class DirectorySync extends AbstractSync {
 				strlen($this->destination) + 1
 			);
 
+			if(!$this->sourceFileMatchesGlob($relativePath)) {
+				continue;
+			}
+
 			if(!$this->sourceFileExists($relativePath)) {
 				$this->delete($relativePath);
 				$this->deletedFiles []= $relativePath;
@@ -102,7 +115,8 @@ class DirectorySync extends AbstractSync {
 				$settings
 			);
 
-			if($filesAreIdentical) {
+			if($filesAreIdentical
+			|| !$this->sourceFileMatchesGlob($relativePath)) {
 				$this->skippedFiles []= $relativePath;
 				continue;
 			}
@@ -169,6 +183,16 @@ class DirectorySync extends AbstractSync {
 		]);
 
 		return file_exists($sourceFile);
+	}
+
+	protected function sourceFileMatchesGlob(string $relativePath):bool {
+		$absoluteGlob = $this->source . "/" . $this->glob;
+		$sourceFile = implode(DIRECTORY_SEPARATOR, [
+			$this->source,
+			$relativePath
+		]);
+		$sourceFile = Path::canonicalize($sourceFile);
+		return Glob::match($sourceFile, $absoluteGlob);
 	}
 
 	protected function compareSourceDestination(

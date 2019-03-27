@@ -3,7 +3,8 @@
 	"description": "Synchronise two directories.",
 
 	"require": {
-		"php": ">=7.2"
+		"php": ">=7.2",
+		"webmozart/glob": "4.*"
 	},
 
 	"require-dev": {
