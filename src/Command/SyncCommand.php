@@ -1,0 +1,48 @@
+<?php
+namespace Gt\Sync\Command;
+
+use Gt\Cli\Argument\ArgumentValueList;
+use Gt\Cli\Command\Command;
+use Gt\Cli\Parameter\NamedParameter;
+use Gt\Cli\Parameter\Parameter;
+use Gt\Sync\DirectorySync;
+
+class SyncCommand extends Command {
+	public function run(ArgumentValueList $arguments = null):void {
+		$source = $arguments->get("source");
+		$destination = $arguments->get("destination");
+		$sync = new DirectorySync($source, $destination);
+		$sync->exec();
+	}
+
+	public function getName():string {
+		return "sync";
+	}
+
+	public function getDescription():string {
+		return "Synchronise two directories";
+	}
+
+	/** @return  NamedParameter[] */
+	public function getRequiredNamedParameterList():array {
+		return [
+			new NamedParameter("source"),
+			new NamedParameter("destination"),
+		];
+	}
+
+	/** @return  NamedParameter[] */
+	public function getOptionalNamedParameterList():array {
+		return [];
+	}
+
+	/** @return  Parameter[] */
+	public function getRequiredParameterList():array {
+		return [];
+	}
+
+	/** @return  Parameter[] */
+	public function getOptionalParameterList():array {
+		return [];
+	}
+}

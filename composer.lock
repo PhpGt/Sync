@@ -4,8 +4,53 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ad737f003eeed7b4e934ffecebcc5316",
+    "content-hash": "990bcbb0006da1dd010f6bdeac3a6c11",
     "packages": [
+        {
+            "name": "phpgt/cli",
+            "version": "v1.1.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PhpGt/Cli.git",
+                "reference": "536028d89e89dfc5d96f7dfb6a02ab48cad089e8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PhpGt/Cli/zipball/536028d89e89dfc5d96f7dfb6a02ab48cad089e8",
+                "reference": "536028d89e89dfc5d96f7dfb6a02ab48cad089e8",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "8.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Gt\\Cli\\": "./src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Greg Bowler",
+                    "email": "greg.bowler@g105b.com"
+                }
+            ],
+            "description": "Command line interface builder.",
+            "keywords": [
+                "cli",
+                "phpgt",
+                "terminal",
+                "webengine"
+            ],
+            "time": "2019-03-25T11:25:42+00:00"
+        },
         {
             "name": "symfony/polyfill-ctype",
             "version": "v1.11.0",

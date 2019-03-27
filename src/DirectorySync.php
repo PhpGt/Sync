@@ -20,6 +20,9 @@ class DirectorySync extends AbstractSync {
 	protected $glob;
 
 	public function __construct(string $source, string $destination) {
+		$source = Path::makeAbsolute($source, getcwd());
+		$destination = Path::makeAbsolute($destination, getcwd());
+
 		parent::__construct($source, $destination);
 
 		if(!is_dir($source)) {
@@ -82,12 +85,14 @@ class DirectorySync extends AbstractSync {
 				continue;
 			}
 
+			$pathName = Path::makeAbsolute($pathName, getcwd());
+
 			$relativePath = substr(
 				$pathName,
 				strlen($this->destination) + 1
 			);
 
-			if(!$this->sourceFileMatchesGlob($relativePath)) {
+			if(!$this->fileMatchesGlob($relativePath)) {
 				continue;
 			}
 
@@ -105,6 +110,7 @@ class DirectorySync extends AbstractSync {
 				continue;
 			}
 
+			$pathName = Path::makeAbsolute($pathName, getcwd());
 			$relativePath = substr(
 				$pathName,
 				strlen($this->source) + 1
@@ -116,7 +122,7 @@ class DirectorySync extends AbstractSync {
 			);
 
 			if($filesAreIdentical
-			|| !$this->sourceFileMatchesGlob($relativePath)) {
+			|| !$this->fileMatchesGlob($relativePath)) {
 				$this->skippedFiles []= $relativePath;
 				continue;
 			}
@@ -185,12 +191,14 @@ class DirectorySync extends AbstractSync {
 		return file_exists($sourceFile);
 	}
 
-	protected function sourceFileMatchesGlob(string $relativePath):bool {
+	protected function fileMatchesGlob(string $absolutePath):bool {
 		$absoluteGlob = $this->source . "/" . $this->glob;
 		$sourceFile = implode(DIRECTORY_SEPARATOR, [
 			$this->source,
-			$relativePath
+			$absolutePath
 		]);
+
+		$sourceFile = Path::makeAbsolute($sourceFile, getcwd());
 		$sourceFile = Path::canonicalize($sourceFile);
 		return Glob::match($sourceFile, $absoluteGlob);
 	}
