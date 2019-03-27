@@ -13,6 +13,16 @@ class SyncCommand extends Command {
 		$destination = $arguments->get("destination");
 		$sync = new DirectorySync($source, $destination);
 		$sync->exec();
+
+		if(!$arguments->contains("silent")) {
+			$this->write("Copied ");
+			$this->write(count($sync->getCopiedFilesList()));
+			$this->write(", skipped ");
+			$this->write(count($sync->getSkippedFilesList()));
+			$this->write(", deleted ");
+			$this->write(count($sync->getDeletedFilesList()));
+			$this->writeLine(".");
+		}
 	}
 
 	public function getName():string {
@@ -43,6 +53,12 @@ class SyncCommand extends Command {
 
 	/** @return  Parameter[] */
 	public function getOptionalParameterList():array {
-		return [];
+		return [
+			new Parameter(
+				false,
+				"silent",
+				"s"
+			),
+		];
 	}
 }
