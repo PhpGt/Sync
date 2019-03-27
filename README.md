@@ -41,3 +41,11 @@ echo "Changed: " . count($sync->getCopiedFilesList());
 echo "Deleted: " . count($sync->getDeletedFilesList());
 echo "Skipped: " . count($sync->getSkippedFilesList());
 ```
+
+Features
+--------
+
++ Cross-platform compatible directory synchronisation (Linux, Windows, Mac).
++ Selective sync through glob matches (only sync js files within script directory with `/script/**/*.js`).
++ Get statistics of copied/deleted/skipped files after sync execution.
++ Low memory footprint.
