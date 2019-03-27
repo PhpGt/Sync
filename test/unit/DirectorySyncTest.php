@@ -253,6 +253,10 @@ class DirectorySyncTest extends TestCase {
 		$sut->exec();
 		$copiedFiles = $sut->getCopiedFilesList();
 		self::assertCount(3, $copiedFiles);
+
+		$sut->exec();
+		$copiedFiles = $sut->getCopiedFilesList();
+		self::assertCount(0, $copiedFiles);
 	}
 
 	protected function createRandomFiles(
