@@ -24,6 +24,10 @@
 		}
 	},
 
+	"bin": [
+		"bin/sync"
+	],
+
 	"keywords": [
 		"rsync",
 		"synchronise",

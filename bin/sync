@@ -29,7 +29,7 @@ foreach($autoloadLocations as $location) {
 }
 
 $application = new Application(
-	"Client-side build system",
+	"Synchronise two directories",
 	new CommandArgumentList("sync", ...$argv),
 	new SyncCommand()
 );
