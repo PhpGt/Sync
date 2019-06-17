@@ -5,25 +5,10 @@ use Gt\Cli\Argument\CommandArgumentList;
 use Gt\Sync\Command\SyncCommand;
 use Gt\Cli\Application;
 
-$autoloadLocations = [
-	implode(DIRECTORY_SEPARATOR, [
-		__DIR__,
-		"..",
-		"..",
-		"..",
-		"autoload.php",
-	]),
-	implode(DIRECTORY_SEPARATOR, [
-		__DIR__,
-		"..",
-		"vendor",
-		"autoload.php",
-	]),
-];
-
-foreach($autoloadLocations as $location) {
-	if(file_exists($location)) {
-		require($location);
+foreach([ __DIR__ . "/../../..", __DIR__ . "/../vendor" ] as $vendor) {
+	$autoload = "$vendor/autoload.php";
+	if(file_exists($autoload)) {
+		require($autoload);
 		break;
 	}
 }
