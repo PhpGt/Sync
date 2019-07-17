@@ -4,7 +4,7 @@
 
 	"require": {
 		"php": ">=7.2",
-		"phpgt/cli": "1.*",
+		"phpgt/cli": "*",
 		"webmozart/glob": "4.*"
 	},
 
