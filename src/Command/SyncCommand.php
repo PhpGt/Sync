@@ -11,7 +11,8 @@ class SyncCommand extends Command {
 	public function run(ArgumentValueList $arguments = null):void {
 		$source = $arguments->get("source");
 		$destination = $arguments->get("destination");
-		$sync = new DirectorySync($source, $destination);
+		$pattern = $arguments->get("pattern");
+		$sync = new DirectorySync($source, $destination, $pattern);
 		$sync->exec();
 
 		if(!$arguments->contains("silent")) {
@@ -54,6 +55,11 @@ class SyncCommand extends Command {
 	/** @return  Parameter[] */
 	public function getOptionalParameterList():array {
 		return [
+			new Parameter(
+				true,
+				"pattern",
+				"p"
+			),
 			new Parameter(
 				false,
 				"silent",

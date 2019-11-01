@@ -19,7 +19,11 @@ class DirectorySync extends AbstractSync {
 	protected $deletedFiles;
 	protected $glob;
 
-	public function __construct(string $source, string $destination) {
+	public function __construct(
+		string $source,
+		string $destination,
+		string $pattern = null
+	) {
 		$source = Path::makeAbsolute($source, getcwd());
 		$destination = Path::makeAbsolute($destination, getcwd());
 
@@ -29,7 +33,12 @@ class DirectorySync extends AbstractSync {
 			throw new SyncException("Source directory does not exist: $source");
 		}
 
-		$this->glob = "**/*";
+		if($pattern) {
+			$this->setPattern($pattern);
+		}
+		else {
+			$this->glob = "**/*";
+		}
 	}
 
 	public function setPattern(string $glob):void {
