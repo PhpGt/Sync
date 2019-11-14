@@ -11,7 +11,8 @@ class SyncCommand extends Command {
 	public function run(ArgumentValueList $arguments = null):void {
 		$source = $arguments->get("source");
 		$destination = $arguments->get("destination");
-		$pattern = $arguments->get("pattern");
+		$pattern = $arguments->get("pattern", null);
+
 		$sync = new DirectorySync($source, $destination, $pattern);
 		$sync->exec();
 
@@ -65,6 +66,11 @@ class SyncCommand extends Command {
 				"silent",
 				"s"
 			),
+			new Parameter(
+				false,
+				"delete",
+				"d"
+			)
 		];
 	}
 }
