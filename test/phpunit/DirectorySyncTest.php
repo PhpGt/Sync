@@ -54,7 +54,7 @@ class DirectorySyncTest extends TestCase {
 		$dest = $this->getRandomTmp();
 		$sut = new DirectorySync($source, $dest);
 
-		self::assertDirectoryNotExists($dest);
+		self::assertDirectoryDoesNotExist($dest);
 		$sut->exec();
 		self::assertDirectoryExists($dest);
 	}
@@ -131,7 +131,7 @@ class DirectorySyncTest extends TestCase {
 		foreach($filesToDelete as $f) {
 			self::assertFileExists($f);
 			unlink($f);
-			self::assertFileNotExists($f);
+			self::assertFileDoesNotExist($f);
 		}
 
 		$sut->exec();
