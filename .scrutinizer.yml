@@ -10,6 +10,7 @@ build:
 
     tests-and-coverage:
       environment:
+        php:
           ini:
             "xdebug.mode": coverage
       tests:
