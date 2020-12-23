@@ -10,8 +10,6 @@ build:
 
     tests-and-coverage:
       environment:
-        php:
-          version: 8.0.0
           ini:
             "xdebug.mode": coverage
       tests:
