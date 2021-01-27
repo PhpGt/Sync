@@ -5,7 +5,7 @@ Synchronise two directories.
 
 ***
 
-<a href="https://circleci.com/gh/PhpGt/Sync" target="_blank">
+<a href="https://github.com/PhpGt/Sync/actions" target="_blank">
 	<img src="https://badge.status.php.gt/sync-build.svg" alt="Build status" />
 </a>
 <a href="https://scrutinizer-ci.com/g/PhpGt/Sync" target="_blank">
