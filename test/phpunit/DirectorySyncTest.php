@@ -42,13 +42,13 @@ class DirectorySyncTest extends TestCase {
 		}
 	}
 
-	public function testSourceNotExists() {
+	public function testSourceNotExists():void {
 		self::expectException(SyncException::class);
 		self::expectExceptionMessage("Source directory does not exist");
 		new DirectorySync($this->getRandomTmp(), $this->getRandomTmp());
 	}
 
-	public function testDestinationNotExists() {
+	public function testDestinationNotExists():void {
 		$source = $this->getRandomTmp();
 		mkdir($source, 0775, true);
 		$dest = $this->getRandomTmp();
@@ -59,7 +59,7 @@ class DirectorySyncTest extends TestCase {
 		self::assertDirectoryExists($dest);
 	}
 
-	public function testCopy() {
+	public function testCopy():void {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
@@ -71,7 +71,7 @@ class DirectorySyncTest extends TestCase {
 		self::assertDirectoryContentsIdentical($source, $dest);
 	}
 
-	public function testCopyNewFileTouched() {
+	public function testCopyNewFileTouched():void {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
@@ -90,7 +90,7 @@ class DirectorySyncTest extends TestCase {
 		self::assertDirectoryContentsIdentical($source, $dest);
 	}
 
-	public function testCopyNewFileEditedNotCheckedByDefault() {
+	public function testCopyNewFileEditedNotCheckedByDefault():void {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
@@ -109,14 +109,14 @@ class DirectorySyncTest extends TestCase {
 		self::assertDirectoryContentsIdentical($source, $dest);
 	}
 
-	public function testDeleteFiles() {
+	public function testDeleteFiles():void {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
 		$numFiles = rand(10, 250);
 		$this->createRandomFiles($source, $numFiles);
 		$filesToDelete = [];
-		$numFilesToDelete = rand(1, round($numFiles / 5));
+		$numFilesToDelete = rand(1, (int)round($numFiles / 5));
 		for($i = 0; $i < $numFilesToDelete; $i++) {
 			$f = $this->getRandomFileFromDirectory($source);
 			if(!in_array($f, $filesToDelete)) {
@@ -138,7 +138,7 @@ class DirectorySyncTest extends TestCase {
 		self::assertDirectoryContentsIdentical($source, $dest);
 	}
 
-	public function testDeleteDirectory() {
+	public function testDeleteDirectory():void {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
@@ -155,7 +155,7 @@ class DirectorySyncTest extends TestCase {
 		self::assertDirectoryContentsIdentical($source, $dest);
 	}
 
-	public function testCopyWrongConfig() {
+	public function testCopyWrongConfig():void {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
@@ -168,7 +168,7 @@ class DirectorySyncTest extends TestCase {
 		);
 	}
 
-	public function testGetCopiedFilesList() {
+	public function testGetCopiedFilesList():void {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
@@ -183,11 +183,11 @@ class DirectorySyncTest extends TestCase {
 		self::assertCount(0, $sut->getCopiedFilesList());
 	}
 
-	public function testGetDeletedFilesList() {
+	public function testGetDeletedFilesList():void {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
-		$sourceFileList = $this->createRandomFiles($source);
+		$this->createRandomFiles($source);
 		$sut = new DirectorySync($source, $dest);
 		$sut->exec();
 
@@ -199,7 +199,7 @@ class DirectorySyncTest extends TestCase {
 		self::assertCount(1, $sut->getDeletedFilesList());
 	}
 
-	public function testGetSkippedFilesList() {
+	public function testGetSkippedFilesList():void {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
@@ -215,7 +215,7 @@ class DirectorySyncTest extends TestCase {
 		self::assertCount(count($sourceFileList), $skippedFilesList);
 	}
 
-	public function testCheck() {
+	public function testCheck():void {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
@@ -227,7 +227,7 @@ class DirectorySyncTest extends TestCase {
 		self::assertTrue($sut->check());
 	}
 
-	public function testSetPattern() {
+	public function testSetPattern():void {
 		$source = $this->getRandomTmp();
 		$dest = $this->getRandomTmp();
 		mkdir($source, 0775, true);
@@ -248,8 +248,7 @@ class DirectorySyncTest extends TestCase {
 		rename($file2, $file2 . "match");
 		rename($file3, $file3 . "match");
 
-		$sut = new DirectorySync($source, $dest);
-		$sut->setPattern("**/*.filematch");
+		$sut = new DirectorySync($source, $dest, "**/*.filematch");
 		$sut->exec();
 		$copiedFiles = $sut->getCopiedFilesList();
 		self::assertCount(3, $copiedFiles);
@@ -259,6 +258,7 @@ class DirectorySyncTest extends TestCase {
 		self::assertCount(0, $copiedFiles);
 	}
 
+	/** @return array<string> */
 	protected function createRandomFiles(
 		string $directory,
 		int $numFiles = 100,
@@ -287,7 +287,7 @@ class DirectorySyncTest extends TestCase {
 				mkdir(dirname($path), 0775, true);
 			}
 			file_put_contents($path, uniqid("content-"));
-			$fileList []= $path;
+			array_push($fileList, $path);
 		}
 
 		return $fileList;
@@ -305,6 +305,8 @@ class DirectorySyncTest extends TestCase {
 			}
 		}
 		while($fileList);
+
+		return "";
 	}
 
 	protected function getRandomSubdirectoryFromDirectory(string $dir):string {
@@ -317,7 +319,7 @@ class DirectorySyncTest extends TestCase {
 		return $file;
 	}
 
-	protected function recursiveDeleteDirectory(string $dir) {
+	protected function recursiveDeleteDirectory(string $dir):void{
 		$directory = new RecursiveDirectoryIterator(
 			$dir,
 			RecursiveDirectoryIterator::SKIP_DOTS

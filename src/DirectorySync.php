@@ -14,15 +14,17 @@ class DirectorySync extends AbstractSync {
 
 	const DEFAULT_SETTINGS = self::COMPARE_FILEMTIME;
 
-	protected $copiedFiles;
-	protected $skippedFiles;
-	protected $deletedFiles;
-	protected $glob;
+	/** @var array<string> */
+	protected array $copiedFiles;
+	/** @var array<string> */
+	protected array $skippedFiles;
+	/** @var array<string> */
+	protected array $deletedFiles;
 
 	public function __construct(
-		string $source,
-		string $destination,
-		string $pattern = null
+		protected string $source,
+		protected string $destination,
+		private string $glob = "**/*"
 	) {
 		$source = Path::makeAbsolute($source, getcwd());
 		$destination = Path::makeAbsolute($destination, getcwd());
@@ -32,17 +34,6 @@ class DirectorySync extends AbstractSync {
 		if(!is_dir($source)) {
 			throw new SyncException("Source directory does not exist: $source");
 		}
-
-		if($pattern) {
-			$this->setPattern($pattern);
-		}
-		else {
-			$this->glob = "**/*";
-		}
-	}
-
-	public function setPattern(string $glob):void {
-		$this->glob = $glob;
 	}
 
 	/**
@@ -107,7 +98,7 @@ class DirectorySync extends AbstractSync {
 
 			if(!$this->sourceFileExists($relativePath)) {
 				$this->delete($relativePath);
-				$this->deletedFiles []= $relativePath;
+				array_push($this->deletedFiles, $relativePath);
 			}
 		}
 
@@ -132,12 +123,12 @@ class DirectorySync extends AbstractSync {
 
 			if($filesAreIdentical
 			|| !$this->fileMatchesGlob($relativePath)) {
-				$this->skippedFiles []= $relativePath;
+				array_push($this->skippedFiles, $relativePath);
 				continue;
 			}
 
 			$this->copy($relativePath);
-			$this->copiedFiles []= $relativePath;
+			array_push($this->copiedFiles, $relativePath);
 		}
 
 		if(!empty($this->copiedFiles)
@@ -146,14 +137,17 @@ class DirectorySync extends AbstractSync {
 		}
 	}
 
+	/** @return array<string> */
 	public function getCopiedFilesList():array {
 		return $this->copiedFiles;
 	}
 
+	/** @return array<string> */
 	public function getSkippedFilesList():array {
 		return $this->skippedFiles;
 	}
 
+	/** @return array<string> */
 	public function getDeletedFilesList():array {
 		return $this->deletedFiles;
 	}
