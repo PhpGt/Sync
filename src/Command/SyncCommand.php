@@ -2,6 +2,7 @@
 namespace Gt\Sync\Command;
 
 use Gt\Cli\Argument\ArgumentValueList;
+use Gt\Cli\Argument\ArgumentValueListNotSetException;
 use Gt\Cli\Command\Command;
 use Gt\Cli\Parameter\NamedParameter;
 use Gt\Cli\Parameter\Parameter;
@@ -11,7 +12,12 @@ class SyncCommand extends Command {
 	public function run(ArgumentValueList $arguments = null):void {
 		$source = $arguments->get("source");
 		$destination = $arguments->get("destination");
-		$pattern = $arguments->get("pattern", null);
+		try {
+			$pattern = $arguments->get("pattern");
+		}
+		catch(ArgumentValueListNotSetException $exception) {
+			$pattern = null;
+		}
 
 		$sync = new DirectorySync($source, $destination, $pattern);
 		$sync->exec();
