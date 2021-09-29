@@ -2,13 +2,10 @@
 namespace Gt\Sync;
 
 abstract class AbstractSync {
-	protected $source;
-	protected $destination;
-
-	public function __construct(string $source, string $destination) {
-		$this->source = $source;
-		$this->destination = $destination;
-	}
+	public function __construct(
+		protected string $source,
+		protected string $destination
+	) {}
 
 	abstract public function exec(int $settings = 0):void;
 }
