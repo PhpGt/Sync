@@ -15,7 +15,7 @@ class SyncCommand extends Command {
 		try {
 			$pattern = $arguments->get("pattern");
 		}
-		catch(ArgumentValueListNotSetException $exception) {
+		catch(ArgumentValueListNotSetException) {
 			$pattern = null;
 		}
 
@@ -24,11 +24,11 @@ class SyncCommand extends Command {
 
 		if(!$arguments->contains("silent")) {
 			$this->write("Copied ");
-			$this->write(count($sync->getCopiedFilesList()));
+			$this->write((string)count($sync->getCopiedFilesList()));
 			$this->write(", skipped ");
-			$this->write(count($sync->getSkippedFilesList()));
+			$this->write((string)count($sync->getSkippedFilesList()));
 			$this->write(", deleted ");
-			$this->write(count($sync->getDeletedFilesList()));
+			$this->write((string)count($sync->getDeletedFilesList()));
 			$this->writeLine(".");
 		}
 	}

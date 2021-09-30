@@ -78,10 +78,12 @@ class DirectorySync extends AbstractSync {
 			$destinationIterator,
 			RecursiveIteratorIterator::CHILD_FIRST
 		);
+
 		foreach($iterator as $pathName => $file) {
+			$filename = $file->getFilename();
 			/** @var $file SplFileInfo */
-			if($file->getFilename() === "."
-			|| $file->getFilename() === "..") {
+			if($filename === "."
+			|| $filename === "..") {
 				continue;
 			}
 
@@ -104,9 +106,11 @@ class DirectorySync extends AbstractSync {
 
 		$iterator = new RecursiveIteratorIterator($sourceIterator);
 		foreach($iterator as $pathName => $file) {
+			$filename = $file->getFilename();
+
 			/** @var $file SplFileInfo */
-			if($file->getFilename() === "."
-				|| $file->getFilename() === "..") {
+			if($filename === "."
+			|| $filename === "..") {
 				continue;
 			}
 
