@@ -16,7 +16,7 @@ class SyncCommand extends Command {
 			$pattern = $arguments->get("pattern");
 		}
 		catch(ArgumentValueListNotSetException) {
-			$pattern = null;
+			$pattern = "**/*";
 		}
 
 		$sync = new DirectorySync($source, $destination, $pattern);
