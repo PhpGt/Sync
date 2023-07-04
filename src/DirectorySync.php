@@ -57,83 +57,7 @@ class DirectorySync extends AbstractSync {
 		$this->deletedFiles = [];
 
 		$this->checkSettings($settings);
-
-		$iteratorSettings = FilesystemIterator::KEY_AS_PATHNAME
-			| FilesystemIterator::CURRENT_AS_FILEINFO;
-
-		if(!is_dir($this->destination)) {
-			mkdir($this->destination, 0775, true);
-		}
-
-		$sourceIterator = new RecursiveDirectoryIterator(
-			$this->source,
-			$iteratorSettings
-		);
-		$destinationIterator = new RecursiveDirectoryIterator(
-			$this->destination,
-			$iteratorSettings
-		);
-
-		$iterator = new RecursiveIteratorIterator(
-			$destinationIterator,
-			RecursiveIteratorIterator::CHILD_FIRST
-		);
-
-		foreach($iterator as $pathName => $file) {
-			$filename = $file->getFilename();
-			/** @var $file SplFileInfo */
-			if($filename === "."
-			|| $filename === "..") {
-				continue;
-			}
-
-			$pathName = Path::makeAbsolute($pathName, getcwd());
-
-			$relativePath = substr(
-				$pathName,
-				strlen($this->destination) + 1
-			);
-
-			if(!$this->fileMatchesGlob($relativePath)) {
-				continue;
-			}
-
-			if(!$this->sourceFileExists($relativePath)) {
-				$this->delete($relativePath);
-				array_push($this->deletedFiles, $relativePath);
-			}
-		}
-
-		$iterator = new RecursiveIteratorIterator($sourceIterator);
-		foreach($iterator as $pathName => $file) {
-			$filename = $file->getFilename();
-
-			/** @var $file SplFileInfo */
-			if($filename === "."
-			|| $filename === "..") {
-				continue;
-			}
-
-			$pathName = Path::makeAbsolute($pathName, getcwd());
-			$relativePath = substr(
-				$pathName,
-				strlen($this->source) + 1
-			);
-
-			$filesAreIdentical = $this->compareSourceDestination(
-				$relativePath,
-				$settings
-			);
-
-			if($filesAreIdentical
-			|| !$this->fileMatchesGlob($relativePath)) {
-				array_push($this->skippedFiles, $relativePath);
-				continue;
-			}
-
-			$this->copy($relativePath);
-			array_push($this->copiedFiles, $relativePath);
-		}
+		$this->performIteration($settings);
 
 		if(!empty($this->copiedFiles)
 		|| !empty($this->deletedFiles)) {
@@ -251,6 +175,102 @@ class DirectorySync extends AbstractSync {
 		if($settings & self::COMPARE_FILEMTIME
 		&& $settings & self::COMPARE_HASH) {
 			throw new SyncException("Cannot compare both filemtime and hash.");
+		}
+	}
+
+	/**
+	 * @param int $settings
+	 * @return void
+	 */
+	protected function performIteration(int $settings): void {
+		$iteratorSettings = FilesystemIterator::KEY_AS_PATHNAME
+			| FilesystemIterator::CURRENT_AS_FILEINFO;
+
+		if(!is_dir($this->destination)) {
+			mkdir($this->destination, 0775, true);
+		}
+
+		$this->performDestinationIteration($iteratorSettings);
+		$this->performSourceIteration($iteratorSettings, $settings);
+	}
+
+	protected function performDestinationIteration(
+		int $iteratorSettings,
+	):void {
+		$destinationIterator = new RecursiveDirectoryIterator(
+			$this->destination,
+			$iteratorSettings
+		);
+
+		$iterator = new RecursiveIteratorIterator(
+			$destinationIterator,
+			RecursiveIteratorIterator::CHILD_FIRST
+		);
+
+		foreach($iterator as $pathName => $file) {
+			$filename = $file->getFilename();
+			/** @var $file SplFileInfo */
+			if($filename === "."
+				|| $filename === "..") {
+				continue;
+			}
+
+			$pathName = Path::makeAbsolute($pathName, getcwd());
+
+			$relativePath = substr(
+				$pathName,
+				strlen($this->destination) + 1
+			);
+
+			if(!$this->fileMatchesGlob($relativePath)) {
+				continue;
+			}
+
+			if(!$this->sourceFileExists($relativePath)) {
+				$this->delete($relativePath);
+				array_push($this->deletedFiles, $relativePath);
+			}
+		}
+	}
+
+	protected function performSourceIteration(
+		int $iteratorSettings,
+		int $settings,
+	):void {
+		$sourceIterator = new RecursiveDirectoryIterator(
+			$this->source,
+			$iteratorSettings
+		);
+
+		$iterator = new RecursiveIteratorIterator($sourceIterator);
+		foreach($iterator as $pathName => $file) {
+			$filename = $file->getFilename();
+
+			/** @var $file SplFileInfo */
+			if($filename === "."
+				|| $filename === "..") {
+				continue;
+			}
+
+			$pathName = Path::makeAbsolute($pathName, getcwd());
+			$relativePath = substr(
+				$pathName,
+				strlen($this->source) + 1
+			);
+
+			$filesAreIdentical = $this->compareSourceDestination(
+				$relativePath,
+				$settings
+			);
+
+			if($filesAreIdentical
+				|| !$this->fileMatchesGlob($relativePath)) {
+				array_push($this->skippedFiles, $relativePath);
+				continue;
+			}
+
+			$this->copy($relativePath);
+			array_push($this->copiedFiles, $relativePath);
 		}
 	}
 }

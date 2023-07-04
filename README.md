@@ -8,10 +8,10 @@ Synchronise two directories.
 <a href="https://github.com/PhpGt/Sync/actions" target="_blank">
 	<img src="https://badge.status.php.gt/sync-build.svg" alt="Build status" />
 </a>
-<a href="https://scrutinizer-ci.com/g/PhpGt/Sync" target="_blank">
+<a href="https://app.codacy.com/gh/PhpGt/Sync" target="_blank">
 	<img src="https://badge.status.php.gt/sync-quality.svg" alt="Code quality" />
 </a>
-<a href="https://scrutinizer-ci.com/g/PhpGt/Sync" target="_blank">
+<a href="https://app.codecov.io/gh/PhpGt/Sync" target="_blank">
 	<img src="https://badge.status.php.gt/sync-coverage.svg" alt="Code coverage" />
 </a>
 <a href="https://packagist.org/packages/PhpGt/Sync" target="_blank">
