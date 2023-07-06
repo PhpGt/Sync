@@ -7,6 +7,7 @@ use Gt\Cli\Command\Command;
 use Gt\Cli\Parameter\NamedParameter;
 use Gt\Cli\Parameter\Parameter;
 use Gt\Sync\DirectorySync;
+use Gt\Sync\SymlinkSync;
 
 class SyncCommand extends Command {
 	public function run(ArgumentValueList $arguments = null):void {
@@ -19,17 +20,11 @@ class SyncCommand extends Command {
 			$pattern = "**/*";
 		}
 
-		$sync = new DirectorySync($source, $destination, $pattern);
-		$sync->exec();
-
-		if(!$arguments->contains("silent")) {
-			$this->write("Copied ");
-			$this->write((string)count($sync->getCopiedFilesList()));
-			$this->write(", skipped ");
-			$this->write((string)count($sync->getSkippedFilesList()));
-			$this->write(", deleted ");
-			$this->write((string)count($sync->getDeletedFilesList()));
-			$this->writeLine(".");
+		if($arguments->contains("symlink")) {
+			$this->performSymlinkSync($arguments, $source, $destination);
+		}
+		else {
+			$this->performDirectorySync($arguments, $source, $destination, $pattern);
 		}
 	}
 
@@ -69,6 +64,11 @@ class SyncCommand extends Command {
 			),
 			new Parameter(
 				false,
+				"symlink",
+				"l",
+			),
+			new Parameter(
+				false,
 				"silent",
 				"s"
 			),
@@ -78,5 +78,44 @@ class SyncCommand extends Command {
 				"d"
 			)
 		];
+	}
+
+	private function performDirectorySync(
+		ArgumentValueList $arguments,
+		string $source,
+		string $destination,
+		string $pattern,
+	):void {
+		$sync = new DirectorySync($source, $destination, $pattern);
+		$sync->exec();
+
+		if(!$arguments->contains("silent")) {
+			$this->write("Copied ");
+			$this->write((string)count($sync->getCopiedFilesList()));
+			$this->write(", skipped ");
+			$this->write((string)count($sync->getSkippedFilesList()));
+			$this->write(", deleted ");
+			$this->write((string)count($sync->getDeletedFilesList()));
+			$this->writeLine(".");
+		}
+	}
+
+	private function performSymlinkSync(
+		ArgumentValueList $arguments,
+		string $source,
+		string $destination,
+	):void {
+		$sync = new SymlinkSync($source, $destination);
+		$sync->exec();
+
+		if(!$arguments->contains("silent")) {
+			$this->write("Linked: directories  ");
+			$this->write((string)count($sync->getLinkedDirectoriesList()));
+			$this->write(", files ");
+			$this->write((string)count($sync->getLinkedFilesList()));
+			$this->write(", failed ");
+			$this->write((string)count($sync->getFailedList()));
+			$this->writeLine(".");
+		}
 	}
 }

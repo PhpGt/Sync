@@ -1,6 +1,5 @@
 #!/usr/bin/env php
 <?php
-
 use Gt\Cli\Argument\CommandArgumentList;
 use Gt\Sync\Command\SyncCommand;
 use Gt\Cli\Application;
