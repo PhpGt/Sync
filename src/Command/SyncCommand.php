@@ -7,6 +7,7 @@ use Gt\Cli\Command\Command;
 use Gt\Cli\Parameter\NamedParameter;
 use Gt\Cli\Parameter\Parameter;
 use Gt\Sync\DirectorySync;
+use Gt\Sync\SymlinkSync;
 
 class SyncCommand extends Command {
 	public function run(ArgumentValueList $arguments = null):void {
@@ -20,7 +21,7 @@ class SyncCommand extends Command {
 		}
 
 		if($arguments->contains("symlink")) {
-			$this->performSymlinkSync($arguments, $source, $destination, $pattern);
+			$this->performSymlinkSync($arguments, $source, $destination);
 		}
 		else {
 			$this->performDirectorySync($arguments, $source, $destination, $pattern);
@@ -103,8 +104,18 @@ class SyncCommand extends Command {
 		ArgumentValueList $arguments,
 		string $source,
 		string $destination,
-		string $pattern,
-	) {
-		// TODO.
+	):void {
+		$sync = new SymlinkSync($source, $destination);
+		$sync->exec();
+
+		if(!$arguments->contains("silent")) {
+			$this->write("Linked: directories  ");
+			$this->write((string)count($sync->getLinkedDirectoriesList()));
+			$this->write(", files ");
+			$this->write((string)count($sync->getLinkedFilesList()));
+			$this->write(", failed ");
+			$this->write((string)count($sync->getFailedList()));
+			$this->writeLine(".");
+		}
 	}
 }
