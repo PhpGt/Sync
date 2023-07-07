@@ -18,12 +18,26 @@ class SymlinkSync extends AbstractSync {
 		$this->skipped = [];
 		$this->failed = [];
 
+		$targetSource = realpath($this->source);
+
+		if(is_link($this->destination)) {
+			$linkTarget = readlink($this->destination);
+
+			if($targetSource !== $linkTarget) {
+				unlink($this->destination);
+			}
+			else {
+				array_push($this->skipped, $this->destination);
+				return;
+			}
+		}
+
 		if(is_dir($this->source)) {
 			if(!is_dir(dirname($this->destination))) {
 				mkdir(dirname($this->destination), recursive: true);
 			}
 
-			if(symlink($this->source, $this->destination)) {
+			if(symlink($targetSource, $this->destination)) {
 				array_push($this->linkedDirectories, $this->destination);
 			}
 			else {
@@ -35,7 +49,7 @@ class SymlinkSync extends AbstractSync {
 				mkdir(dirname($this->destination), recursive: true);
 			}
 
-			if(symlink($this->source, $this->destination)) {
+			if(symlink($targetSource, $this->destination)) {
 				array_push($this->linkedFiles, $this->destination);
 			}
 			else {
@@ -65,5 +79,10 @@ class SymlinkSync extends AbstractSync {
 	/** @return array<string> */
 	public function getFailedList():array {
 		return $this->failed;
+	}
+
+	/** @return array<string> */
+	public function getSkippedList():array {
+		return $this->skipped;
 	}
 }

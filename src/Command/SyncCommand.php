@@ -108,13 +108,25 @@ class SyncCommand extends Command {
 		$sync = new SymlinkSync($source, $destination);
 		$sync->exec();
 
+		$countDirectories = count($sync->getLinkedDirectoriesList());
+		$countFiles = count($sync->getLinkedFilesList());
+		$countSkipped = count($sync->getSkippedList());
+		$countFailed = count($sync->getFailedList());
+
+		if($countDirectories + $countFiles + $countFailed === 0
+		&& $countSkipped > 0) {
+			return;
+		}
+
 		if(!$arguments->contains("silent")) {
-			$this->write("Linked: directories  ");
-			$this->write((string)count($sync->getLinkedDirectoriesList()));
+			$this->write("Linked: directories ");
+			$this->write((string)$countDirectories);
 			$this->write(", files ");
-			$this->write((string)count($sync->getLinkedFilesList()));
+			$this->write((string)$countFiles);
+			$this->write(", skipped ");
+			$this->write((string)$countSkipped);
 			$this->write(", failed ");
-			$this->write((string)count($sync->getFailedList()));
+			$this->write((string)$countFailed);
 			$this->writeLine(".");
 		}
 	}
