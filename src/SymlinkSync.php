@@ -23,7 +23,7 @@ class SymlinkSync extends AbstractSync {
 				mkdir(dirname($this->destination), recursive: true);
 			}
 
-			if(symlink($this->source, $this->destination)) {
+			if(symlink(realpath($this->source), $this->destination)) {
 				array_push($this->linkedDirectories, $this->destination);
 			}
 			else {
@@ -35,7 +35,7 @@ class SymlinkSync extends AbstractSync {
 				mkdir(dirname($this->destination), recursive: true);
 			}
 
-			if(symlink($this->source, $this->destination)) {
+			if(symlink(realpath($this->source), $this->destination)) {
 				array_push($this->linkedFiles, $this->destination);
 			}
 			else {
