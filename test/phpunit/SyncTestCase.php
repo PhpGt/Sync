@@ -1,5 +1,6 @@
 <?php
 namespace Gt\Sync\Test;
+use Exception;
 use FilesystemIterator;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
@@ -14,29 +15,7 @@ class SyncTestCase extends TestCase {
 			return;
 		}
 
-		$directory = new RecursiveDirectoryIterator(
-			$baseTmp,
-			FilesystemIterator::KEY_AS_PATHNAME
-			| FilesystemIterator::CURRENT_AS_FILEINFO
-		);
-		$iterator = new RecursiveIteratorIterator(
-			$directory,
-			RecursiveIteratorIterator::CHILD_FIRST
-		);
-		foreach($iterator as $filePath => $file) {
-			/** @var $file SplFileInfo */
-			if($file->getFilename() === "."
-				|| $file->getFilename() === "..") {
-				continue;
-			}
-
-			if($file->isDir()) {
-				rmdir($filePath);
-			}
-			else {
-				unlink($filePath);
-			}
-		}
+		$this->recursiveDeleteDirectory($baseTmp);
 	}
 
 	protected function getRandomTmp():string {
@@ -116,34 +95,28 @@ class SyncTestCase extends TestCase {
 	}
 
 	protected function recursiveDeleteDirectory(string $dir):void {
-		$directory = new RecursiveDirectoryIterator(
-			$dir,
-			RecursiveDirectoryIterator::SKIP_DOTS
-			| RecursiveDirectoryIterator::KEY_AS_PATHNAME
-			| RecursiveDirectoryIterator::CURRENT_AS_FILEINFO
-		);
-		$iterator = new RecursiveIteratorIterator(
-			$directory,
-			RecursiveIteratorIterator::CHILD_FIRST
-		);
-
-		foreach($iterator as $pathName => $file) {
-			/** @var $file SplFileInfo */
-			if($file->getFilename() === "."
-				|| $file->getFilename() === "..") {
-				continue;
-			}
-
-			if(is_dir($pathName)) {
-				rmdir($pathName);
-			}
-			else {
-				unlink($pathName);
-			}
+		if (!is_dir($dir)) {
+			throw new Exception('Invalid directory to delete: $dir');
 		}
 
-		if(is_dir($dir)) {
-			rmdir($dir);
+		$directory = new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS | FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO);
+		$iterator = new RecursiveIteratorIterator($directory, RecursiveIteratorIterator::CHILD_FIRST);
+
+		/**
+		 * @var string $pathName
+		 * @var SplFileInfo $fileInfo
+		 */
+		foreach ($iterator as $pathName => $fileInfo) {
+			if($fileInfo->isLink() || $fileInfo->isFile()) {
+				if(!unlink($pathName)) {
+					throw new Exception('Failed to delete file: ' . $pathName);
+				}
+			}
+			else {
+				if(!rmdir($pathName)) {
+					throw new Exception('Failed to delete directory: ' . $pathName);
+				}
+			}
 		}
 	}
 

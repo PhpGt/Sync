@@ -43,4 +43,51 @@ class SymlinkSyncTest extends SyncTestCase {
 		$linkedAll = $sut->getCombinedLinkedList();
 		self::assertCount(1, $linkedAll);
 	}
+
+	public function testSymLink_changeDirPath():void {
+		$baseDir = $this->getRandomTmp();
+		$sourceDirOld = "$baseDir/data/upload-old";
+		$sourceDirNew = "$baseDir/data/upload-new";
+		$destDir = "$baseDir/www/data/upload";
+
+		$relativeFilePath = "subdir1/subdir2/example.file";
+		$filePath = "$sourceDirOld/$relativeFilePath";
+		if(!is_dir(dirname($filePath))) {
+			mkdir(dirname($filePath), recursive: true);
+		}
+		file_put_contents($filePath, "Hello, Sync!");
+
+		$sut = new SymlinkSync($sourceDirOld, $destDir);
+		$sut->exec();
+
+		self::assertFileExists("$destDir/$relativeFilePath");
+		rename($sourceDirOld, $sourceDirNew);
+		self::assertFileDoesNotExist("$destDir/$relativeFilePath");
+
+		$sut = new SymlinkSync($sourceDirNew, $destDir);
+		$sut->exec();
+		self::assertFileExists("$destDir/$relativeFilePath");
+	}
+
+	public function testSymLink_multipleCallsToExec():void {
+		$baseDir = $this->getRandomTmp();
+		$sourceDir = "$baseDir/data/upload";
+		$destDir = "$baseDir/www/data/upload";
+
+		$filePath = "$sourceDir/subdir1/subdir2/example.file";
+		if(!is_dir(dirname($filePath))) {
+			mkdir(dirname($filePath), recursive: true);
+		}
+		file_put_contents($filePath, "Hello, Sync!");
+
+		$sut = new SymlinkSync($sourceDir, $destDir);
+		$sut->exec();
+		self::assertCount(1, $sut->getCombinedLinkedList());
+		self::assertCount(0, $sut->getFailedList());
+		self::assertCount(0, $sut->getSkippedList());
+		$sut->exec();
+		self::assertCount(0, $sut->getLinkedFilesList());
+		self::assertCount(0, $sut->getFailedList());
+		self::assertCount(1, $sut->getSkippedList());
+	}
 }
