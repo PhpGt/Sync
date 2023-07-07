@@ -113,7 +113,8 @@ class SyncCommand extends Command {
 		$countSkipped = count($sync->getSkippedList());
 		$countFailed = count($sync->getFailedList());
 
-		if($countDirectories + $countFiles + $countFailed === 0 && $countSkipped > 0) {
+		if($countDirectories + $countFiles + $countFailed === 0
+		&& $countSkipped > 0) {
 			return;
 		}
 
