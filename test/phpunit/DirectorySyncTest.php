@@ -224,4 +224,16 @@ class DirectorySyncTest extends SyncTestCase {
 		$copiedFiles = $sut->getCopiedFilesList();
 		self::assertCount(0, $copiedFiles);
 	}
+
+	public function testDefaultPatternMatchesAllFiles():void {
+		$source = $this->getRandomTmp();
+		$dest = $this->getRandomTmp();
+		mkdir($source, recursive: true);
+		$this->createRandomFiles($source);
+
+		$sut = new DirectorySync($source, $dest, $source);
+		$sut->exec();
+		$copiedFiles = $sut->getCopiedFilesList();
+		self::assertCount(3, $copiedFiles);
+	}
 }
